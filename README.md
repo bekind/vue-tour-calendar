@@ -167,6 +167,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 该日历支持三种选择模式，通过配置相应选项，实现单选，连续多选，跨越多选。
 
 1. 单选模式
+
    ![seltype0](README.assets/seltype0.gif)
 
 2. 连续多选
