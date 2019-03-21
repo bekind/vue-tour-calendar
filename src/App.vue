@@ -16,7 +16,7 @@ export default {
 	data(){
 		return {
 			option:{
-				selectType: 1
+				selectType: 2
 			},
 			renderData: [{
 				date: '2019/03/20',
