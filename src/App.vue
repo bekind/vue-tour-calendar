@@ -1,14 +1,11 @@
 <template>
   <div id="app">
-    <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
-    <!-- <HelloWorld msg="Welcome to Your Vue.js App"/> -->
 		<Calendar :options="option" :render-data="renderData" @calendar_confirm="confirm"></Calendar>
   </div>
 </template>
 
 <script>
 	/* eslint-disable */
-// import HelloWorld from './components/HelloWorld.vue'
 import Calendar from './components/Calendar.vue'
 
 export default {

@@ -9,9 +9,9 @@
 		"url": "git+https://github.com/bekind/vue-tour-calendar.git"
 	},
 	"files": [
-    "dist",
-    "src"
+    "dist"
   ],
+	"main": "dist/Calendar.umd.min.js",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build --target lib --name Calendar src/components/Calendar.vue",
