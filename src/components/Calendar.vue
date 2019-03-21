@@ -4,8 +4,7 @@
 			<li v-for="week in weeks" :key="week" :class="{weekend: isWeekend(week)}">{{week}}</li>
 		</ul>
 		<div class="months">
-			<section v-for="(month, midx) in months"
-			:key="[month.year,month.month].join('-')">
+			<section v-for="(month, midx) in months" :key="[month.year,month.month].join('-')">
 				<p class="month">{{month.year}}年{{month.month}}月</p>
 				<ul class="month-days">
 					<li :class="[day.belong != 1 ? 'gray': '', day.isWeekend ? 'weekend' : '', day.isToday ? 'today' : '', day.selectedClass]" 
@@ -15,7 +14,7 @@
 						<div class="tips" v-if="day.isStart">入住</div>
 						<div class="tips" v-if="day.isEnd">离店</div>
 						<em>{{cleanMode ? (day.belong==1 ? day.day : '') : day.day}}</em>
-						<em class="price">{{cleanMode ? (day.belong==1 ? '￥'+ day.price : '') : '￥'+ day.price}}</em>
+						<em class="price" v-if="day.price">{{cleanMode ? (day.belong==1 ? '￥'+ day.price : '') : '￥'+ day.price}}</em>
 					</li>
 				</ul>
 			</section>
@@ -76,14 +75,16 @@
 	/* eslint-disable */
 	export default {
 		name: 'Calendar',
+		props: ['options'],
 		data() {
 			return {
 				weeks: [],
 				firstDay: 0, //一周的开始日期 0周日,1周一
 				months: [],
-				selectType: 1, //0单选，1起始多选，2跳跃多选
+				selectType: 0, //0单选，1起始多选，2跳跃多选
 				selectedData: [],
-				cleanMode: false,	//是否在当月中拼接显示上月的末尾和下月开始的日期
+				cleanMode: true,	//是否在当月中拼接显示上月的末尾和下月开始的日期
+				userData: {}
 			}
 		},
 		methods: {
@@ -131,7 +132,7 @@
 					days.unshift({
 						day: lastDay--,
 						belong: 0,
-						price: '122',
+						price: '',
 						isWeekend: false,
 						selected: false,
 						isStart: false,
@@ -144,18 +145,25 @@
 				for (var i = 1; i <= curMonthDays; i++) {
 					let week = new Date(year, month - 1, i).getDay()
 					let isToday =(today.getFullYear() == year) && (today.getMonth() + 1 == month) && (today.getDate() == i)
-
-					days.push({
+					let dayObj = {
 						day: i,
 						belong: 1,
-						price: '212',
+						price: '',
 						isWeekend: week == 0 || week == 6,
 						selected: false,
 						isStart: false,
 						isEnd: false,
 						isToday: isToday,
 						selectedClass: ''
-					})
+					}
+					//绑定用户数据
+					let theUserData = this.getUserDataByDate(year, month, i)
+					if (theUserData) {
+						dayObj.price = theUserData.price
+						dayObj.userData = theUserData
+						// Object.assign(dayObj, theUserData)
+					}
+					days.push(dayObj)
 				}
 				if (days.length % 7 != 0) {
 					//补齐下月数据
@@ -164,7 +172,7 @@
 						days.push({
 							day: i,
 							belong: 2,
-							price: '122',
+							price: '',
 							isWeekend: false,
 							selected: false,
 							isStart: false,
@@ -267,27 +275,60 @@
 					let month = this.months[item.monthIdx]
 					let day = month.days[item.dayIdx]
 					let date = [month.year,month.month,day.day].join('/')
-					callbackData.push({
-						day: date,
-						price: day.price
-					})
+					let obj = { date: date }
+					if (day.userData) {
+						Object.assign(obj, day.userData)
+					}
+					callbackData.push(obj)
 				})
 				callbackData.sort((a,b)=>{
-					return new Date(a.day) - new Date(b.day) 
+					return new Date(a.date) - new Date(b.date) 
 				})
 				console.log(callbackData)
+			},
+			getUserDataByDate(year, month, day) {
+				let key = [year, month].join('/')
+				if (this.userData.hasOwnProperty(key)){
+					return this.userData[key][day]
+				}
+				return null
+			},
+			initOptions() {
+				this.weeks = this.firstDay == 1 ? ['一', '二', '三', '四', '五', '六', '日'] : ['日', '一', '二', '三', '四', '五', '六']
+				if (this.options) {
+					this.selectType = this.options.selectType || 0
+					this.cleanMode = this.options.cleanMode || true
+					if (this.options.data) {
+						this.options.data.forEach((item)=>{
+							let date = item.date
+							let dateObj = new Date(date)
+							let year = dateObj.getFullYear()
+							let month = dateObj.getMonth() + 1
+							let day = dateObj.getDate()
+							let key = [year,month].join('/')
+							if (!this.userData[key]) {
+								this.userData[key] = {}
+							}
+							if (!this.userData[key][day]){
+								this.userData[key][day] = {}
+							}
+							this.userData[key][day] = item
+						})
+					}
+				}
+				// console.log(this.userData)
+				if (this.selectType == 1) {
+					this.cleanMode = true;
+				}
+				for (let i=0;i<6;i++) {
+					let date = new Date;
+					date.setMonth(date.getMonth()+i)
+					this.createMonthData(date)
+				}
 			}
 		},
 		created() {
-			this.weeks = this.firstDay == 1 ? ['一', '二', '三', '四', '五', '六', '日'] : ['日', '一', '二', '三', '四', '五', '六']
-			if (this.selectType == 1) {
-				this.cleanMode = true;
-			}
-			for (let i=0;i<6;i++) {
-				let date = new Date;
-				date.setMonth(date.getMonth()+i)
-				this.createMonthData(date)
-			}
+			this.initOptions();
 		}
 	}
 </script>

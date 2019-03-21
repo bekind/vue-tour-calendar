@@ -1,7 +1,13 @@
 {
   "name": "vue-tour-calendar",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+	"description": "A vue calendar plugin for tour product to select dates",
+	"author": "Jean",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/bekind/vue-tour-calendar.git"
+	},
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -44,5 +50,13 @@
     "> 1%",
     "last 2 versions",
     "not ie <= 8"
-  ]
+  ],
+	"keywords": [
+		"vue",
+		"calendar",
+		"tour",
+		"travel",
+		"hotel"
+	],
+	"license": "MIT"
 }

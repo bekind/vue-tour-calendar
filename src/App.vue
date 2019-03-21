@@ -2,7 +2,7 @@
   <div id="app">
     <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
     <!-- <HelloWorld msg="Welcome to Your Vue.js App"/> -->
-		<Calendar></Calendar>
+		<Calendar :options="option"></Calendar>
   </div>
 </template>
 
@@ -14,7 +14,31 @@ export default {
   name: 'app',
   components: {
     Calendar
-  }
+  },
+	data(){
+		return {
+			option:{
+				selectType: 2,
+				data: [{
+					date: '2019/03/20',
+					price: '123',
+					id: 1
+				},{
+					date: '2019/03/21',
+					price: '249',
+					id: 2
+				},{
+					date: '2019/03/22',
+					price: '349',
+					id: 3
+				},{
+					date: '2019/04/21',
+					price: '249',
+					id: 4
+				}]
+			}
+		}
+	}
 }
 </script>
 
