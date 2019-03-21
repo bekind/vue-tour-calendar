@@ -1,5 +1,5 @@
 //designWidth:设计稿的实际宽度值，需要根据实际设置
-;(function (designWidth) {
+(function (designWidth) {
     var uAgent = window.navigator.userAgent,
         tid;
     var isIOS = uAgent.match(/iphone/i);

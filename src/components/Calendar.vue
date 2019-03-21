@@ -11,61 +11,13 @@
 					v-for="(day, idx) in month.days"
 					:key="bindDayKeys(month.year, month.month, idx)"
 					@click="dayClick(midx, day, idx)">
-						<div class="tips" v-if="day.isStart">入住</div>
-						<div class="tips" v-if="day.isEnd">离店</div>
+						<div class="tips" :class="{right: isSunday(month.year,month.month,day.day)}" v-if="day.isStart">入住</div>
+						<div class="tips" :class="{right: isEndNearBegin(midx, idx)}" v-if="day.isEnd">离店</div>
 						<em>{{cleanMode ? (day.belong==1 ? day.day : '') : day.day}}</em>
 						<em class="price" v-if="day.price">{{cleanMode ? (day.belong==1 ? '￥'+ day.price : '') : '￥'+ day.price}}</em>
 					</li>
 				</ul>
 			</section>
-			<!-- <section>
-				<p class="month">2019年4月</p>
-				<ul class="month-days">
-					<li class="gray"><em>31</em></li>
-					<li class="sel start">
-						<div class="tips">入驻</div>
-						<em>1</em>
-						<em class="price">￥256</em>
-					</li>
-					<li class="light">2</li>
-					<li class="light">3</li>
-					<li class="light">4</li>
-					<li class="sel end">
-						<div class="tips">离店</div>
-						<em>5</em>
-						<em class="price">￥256</em>
-					</li>
-					<li class="weekend">6</li>
-					<li class="weekend">7</li>
-					<li><em>8</em><em class="price">￥256</em></li>
-					<li><em>9</em><em class="price">￥256</em></li>
-					<li>10</li>
-					<li>11</li>
-					<li>12</li>
-					<li class="weekend">13</li>
-					<li class="weekend">14</li>
-					<li>15</li>
-					<li>16</li>
-					<li>17</li>
-					<li>18</li>
-					<li>19</li>
-					<li class="weekend">20</li>
-					<li class="weekend">21</li>
-					<li>22</li>
-					<li>23</li>
-					<li>24</li>
-					<li>25</li>
-					<li>26</li>
-					<li class="weekend">27</li>
-					<li class="weekend">28</li>
-					<li>29</li>
-					<li>30</li>
-					<li class="gray">1</li>
-					<li class="gray">2</li>
-					<li class="gray">3</li>
-					<li class="gray">4</li>
-				</ul>
-			</section> -->
 			<p class="confirm-btn" @click="confirm">提交</p>
 		</div>
 	</div>
@@ -73,9 +25,11 @@
 
 <script>
 	/* eslint-disable */
+	import rem from '../assets/newrem';
+	
 	export default {
 		name: 'Calendar',
-		props: ['options'],
+		props: ['options', 'renderData'],
 		data() {
 			return {
 				weeks: [],
@@ -87,12 +41,26 @@
 				userData: {}
 			}
 		},
+		watch: {
+			renderData: function(val){
+				this.reRender();
+			}
+		},
 		methods: {
 			bindDayKeys(year, month, idx) {
 				return [year, month, idx].join('-')
 			},
 			isWeekend(week) {
 				return ['六', '日'].indexOf(week) > -1
+			},
+			isSunday(year,month, day) {
+				return (new Date(year, month-1, day)).getDay() == 0
+			},
+			isEndNearBegin(mIdx, dayIdx){
+				let days = this.months[mIdx].days
+				let isStartSunday = this.isSunday(this.months[mIdx].year, this.months[mIdx].month, days[dayIdx-1].day)
+				let isEndSunday = this.isSunday(this.months[mIdx].year, this.months[mIdx].month, days[dayIdx].day)
+				return (days[dayIdx-1].isStart && isStartSunday) || isEndSunday
 			},
 			getCountDays(date) {
 				var curDate = date || new Date;
@@ -284,7 +252,8 @@
 				callbackData.sort((a,b)=>{
 					return new Date(a.date) - new Date(b.date) 
 				})
-				console.log(callbackData)
+				// console.log(callbackData)
+				this.$emit('calendar_confirm', callbackData)
 			},
 			getUserDataByDate(year, month, day) {
 				let key = [year, month].join('/')
@@ -298,23 +267,23 @@
 				if (this.options) {
 					this.selectType = this.options.selectType || 0
 					this.cleanMode = this.options.cleanMode || true
-					if (this.options.data) {
-						this.options.data.forEach((item)=>{
-							let date = item.date
-							let dateObj = new Date(date)
-							let year = dateObj.getFullYear()
-							let month = dateObj.getMonth() + 1
-							let day = dateObj.getDate()
-							let key = [year,month].join('/')
-							if (!this.userData[key]) {
-								this.userData[key] = {}
-							}
-							if (!this.userData[key][day]){
-								this.userData[key][day] = {}
-							}
-							this.userData[key][day] = item
-						})
-					}
+				}
+				if (this.renderData) {
+					this.renderData.forEach((item)=>{
+						let date = item.date
+						let dateObj = new Date(date)
+						let year = dateObj.getFullYear()
+						let month = dateObj.getMonth() + 1
+						let day = dateObj.getDate()
+						let key = [year,month].join('/')
+						if (!this.userData[key]) {
+							this.userData[key] = {}
+						}
+						if (!this.userData[key][day]){
+							this.userData[key][day] = {}
+						}
+						this.userData[key][day] = item
+					})
 				}
 				// console.log(this.userData)
 				if (this.selectType == 1) {
@@ -325,15 +294,26 @@
 					date.setMonth(date.getMonth()+i)
 					this.createMonthData(date)
 				}
+			},
+			reRender(){
+				//如果用户数据更新，需要重绘
+				// 清除之前数据
+				for(var property in this.$data){
+					this.$data[property] = this.$initialOption[property]
+				}
+				this.initOptions();
 			}
 		},
 		created() {
+			this.$initialOption = JSON.parse(JSON.stringify(this.$data))
 			this.initOptions();
 		}
 	}
 </script>
 
 <style lang="less" scoped>
+	@import "../assets/base.css";
+	
 	@bgColor: #f0f0f0;
 	@fontColor: #333;
 	@highlightColor: #41a863;
@@ -363,15 +343,16 @@
 
 	.weeks {
 		position: fixed;
-		width: 100%;
 		top: 0;
+		right: 0;
+		left: 0;
 		z-index: 10;
 		display: -webkit-flex;
 		display: flex;
 		text-align: center;
 		background: @bgColor;
 		color: @fontColor;
-
+		font-size: .28rem;
 		li {
 			-webkit-flex: 1;
 			flex: 1;
@@ -480,6 +461,14 @@
 		border-radius: .1rem;
 		position: absolute;
 		font-size: .2rem;
+		z-index: 10;
+		&.right {
+			transform: translateX(60%);
+			&::after{
+				transform: skewX(-60deg);
+				left: 0;
+			}
+		}
 
 		&::after {
 			content: '';
@@ -492,7 +481,7 @@
 			border-width: .1rem .15rem .1rem .15rem;
 			bottom: -.14rem;
 			left: 50%;
-			transform: skewX(30deg)
+			transform: skewX(30deg);
 		}
 	}
 	.confirm-btn {
@@ -502,6 +491,8 @@
 		font-size: .32rem;
 		position: fixed;
 		bottom: 0;
-		width: 100%;
+		text-align: center;
+		left: 0;
+		right: 0;
 	}
 </style>
