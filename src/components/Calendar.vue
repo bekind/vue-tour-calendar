@@ -461,7 +461,7 @@
 		border-radius: .1rem;
 		position: absolute;
 		font-size: .2rem;
-		z-index: 10;
+		z-index: 8;
 		&.right {
 			transform: translateX(60%);
 			&::after{
