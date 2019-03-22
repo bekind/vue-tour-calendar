@@ -1,6 +1,6 @@
 {
   "name": "vue-tour-calendar",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
 	"description": "A vue calendar plugin for tour product to select dates",
 	"author": "Jean",
@@ -9,7 +9,8 @@
 		"url": "git+https://github.com/bekind/vue-tour-calendar.git"
 	},
 	"files": [
-    "dist"
+    "dist",
+		"README.assets"
   ],
 	"main": "dist/Calendar.umd.min.js",
   "scripts": {
